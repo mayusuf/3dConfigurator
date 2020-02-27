@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" ng-app>
+	<head>
+		<title> 3D configurator</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+        <!-- Include css -->
+        <link type="text/css" rel="stylesheet" href="./css/main.css">
+        <link rel="stylesheet" href="./css/style.css">
+        <!-- End -->
+        
+        <!-- Include script -->
+        <script src="./build/angular.min.js"></script>
+        <script src="app.js"></script>
+        <!-- End -->
+        
+    
+	</head>
+    
+	<body>
+
+		<!-- <div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - geometries</div> -->
+        
+        <!-- Link this DOM object to the ConfigController in app.js -->
+        <div ng-controller="ConfigController">
+
+            <div class="floatingbox list">
+                
+                <ul>
+                <!-- Iterate through all geometries configuration -->
+                    
+                    <li ng-repeat="part in parts">
+                        <a href ng-click=''>
+                            {{part.geometry}}:{{part.parameters.radius}} {{part.parameters.height}} 
+                                                 
+                        </a>
+                        
+                        
+                    </li>
+                    <!-- Iterate through all color configuration -->
+                    <li ng-repeat="color in colors">
+                        <a href ng-click=''>{{color.label}}</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+		<script type="module">
+
+			import * as THREE from './build/three.module.js';
+
+			import Stats from './jsm/libs/stats.module.js';
+
+			var camera, scene, renderer, stats;
+
+			// function initialization
+            init();  // initialize camera, scene and other thing. Also load geometries and mesh those with material
+			animate(); // render and animate the object in canvas
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.y = 400;
+
+				scene = new THREE.Scene();
+
+				var object;
+
+				var ambientLight = new THREE.AmbientLight( 0xcccccc, 0.4 );
+				scene.add( ambientLight );
+
+				var pointLight = new THREE.PointLight( 0xffffff, 0.8 );
+				camera.add( pointLight );
+				scene.add( camera );
+
+				var map = new THREE.TextureLoader().load( 'textures/uv_grid_opengl.jpg' );
+				map.wrapS = map.wrapT = THREE.RepeatWrapping;
+				map.anisotropy = 16;
+
+				var material = new THREE.MeshPhongMaterial( { map: map, side: THREE.DoubleSide } );
+
+				
+
+				object = new THREE.Mesh( new THREE.SphereBufferGeometry( 75, 20, 10 ), material );
+				object.position.set( - 300, 0, 200 );
+				scene.add( object );
+
+				
+				object = new THREE.Mesh( new THREE.BoxBufferGeometry( 100, 100, 100, 4, 4, 4 ), material );
+				object.position.set( - 100, 0, 0 );
+				scene.add( object );
+
+				
+				object = new THREE.Mesh( new THREE.CylinderBufferGeometry( 25, 75, 100, 40, 5 ), material );
+				object.position.set( - 300, 0, - 200 );
+				scene.add( object );
+
+				var points = [];
+
+				for ( var i = 0; i < 50; i ++ ) {
+
+					points.push( new THREE.Vector2( Math.sin( i * 0.2 ) * Math.sin( i * 0.1 ) * 15 + 50, ( i - 5 ) * 2 ) );
+
+				}
+
+				
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+
+				
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				var timer = Date.now() * 0.0001;
+
+				camera.position.x = Math.cos( timer ) * 800;
+				camera.position.z = Math.sin( timer ) * 800;
+
+				camera.lookAt( scene.position );
+
+				scene.traverse( function ( object ) {
+
+					if ( object.isMesh === true ) {
+
+						object.rotation.x = timer * 5;
+						object.rotation.y = timer * 2.5;
+
+					}
+
+				} );
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
